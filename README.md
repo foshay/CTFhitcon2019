@@ -9,7 +9,7 @@ RELRO           STACK CANARY      NX            PIE             RPATH      RUNPA
 Full RELRO      No canary found   NX enabled    PIE enabled     No RPATH   No RUNPATH   No Symbols      No      0      
 ```
 
-The program starts by asking for an input size to send to malloc().
+The program starts by asking for an input size to send to var7 = malloc(size). From now on I will refer to var7 as *mValue*
 After sending the input size it prints out a "Magic" pointer value which points towards where the heap was allocated.
 
 For example, mallocing 100 gives us a pointer to 0x55a29a156260
@@ -74,4 +74,21 @@ What the program does with Offset and Value is it passes value to the offset of 
 mValue[offset] = value
 ```
 The program asks for Offset & Value twice.
-The first Offset and Value we send is (libc_offset+free_hook)/8 for the offset and (libcBase+system) for the value
+The first Offset and Value we send is `(libc_offset+free_hook)/8` for the offset and `(libcBase+system)` for the value.
+For the Offset, we add together __libc_offset__ and __free_hook__ and then divide the sum by 8. We do this because we are already starting at __Magic__ so we need to add __libc_offset__ to get to the __libcBase__. Then we add the offset of __free_hook__ so that we are pinpointing to the address of __free_hook__. We divide by 8 because *mValue* is a QUADWORD. This means that every *mValue* is equivalent to 8 bytes (64 bits). The Value is __libcBase__ plus the offset of __system__. This points towards the __system__ call. The payload is as follows:
+```
+payload = "%x %x" % ((libc_offset+free_hook)/8,(libcBase+system))
+```
+After sending this payload, we have succesfully overwritten the __free_hook__ call with the __system__ call.
+For our second call we need to call __freee__ in order to invoke our newly placed __system__ call. We can achieve this by sending 1024 of an arbitrary character as the offset to invoke __free__. When __free__ is invoked the argument passed to it is the value that was supposed to be set at the offset of *mValue*. For example
+```
+mValue[1024] = value
+                 v
+          free(value)
+```
+With our altered code it now looks like this
+```
+mValue[1024] = value
+                 v
+        system(value)
+```
