@@ -1,4 +1,10 @@
 # CTFhitcon2019
+
+## Summary
+We overwrite __free_hook__ with __system__. Then invoke __free__, which is now __system__, and pass in the argument "ed" to open the ed editor which allows us to get shell via !'/bin/sh'
+
+## In depth write up
+
 The disassembly of the file is as follows:
 
 ![Disassembly of the file](ida.png)
@@ -97,4 +103,5 @@ dc
 The command of interest is the __ed__ command. This launches the [ed](https://linux.die.net/man/1/ed) text editor.
 So, for our second Offset & Value input we use `payload = ('1'*1024+' '+'ed')`
 Now that we are in the ed editor all we need to do is send the command `!'/bin/sh'`.
-After that, we can CAT out the flag by navigating to /home/trick_or_treat/ and doing `CAT flag`
+After that, we can CAT out the flag by doing `CAT /home/trick_or_treat/flag`
+This gives us the flag `hitcon{T1is_i5_th3_c4ndy_for_yoU}`
