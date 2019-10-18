@@ -64,21 +64,12 @@ system = 0x4f440
 libcBase = magic+libc_offset
 ```
 
-After setting up our environment by alloating a hugepage we are presented with the prompt
-```
-Offset & Value:
-```
+After setting up our environment by alloating a hugepage we are presented with the prompt `Offset & Value:`
 From the disassembly we can see that it is expecting input in the format "%lx %lx" which means it is looking for long hex input. This means we don't need to format our input in a special way and can send addresses "as is".
-What the program does with Offset and Value is it passes value to the offset of our malloced value. For example:
-```
-mValue[offset] = value
-```
+What the program does with Offset and Value is it passes value to the offset of our malloced value. For example `mValue[offset] = value`
 The program asks for Offset & Value twice.
 The first Offset and Value we send is `(libc_offset+free_hook)/8` for the offset and `(libcBase+system)` for the value.
-For the Offset, we add together __libc_offset__ and __free_hook__ and then divide the sum by 8. We do this because we are already starting at __Magic__ so we need to add __libc_offset__ to get to the __libcBase__. Then we add the offset of __free_hook__ so that we are pinpointing to the address of __free_hook__. We divide by 8 because *mValue* is a QUADWORD. This means that every *mValue* is equivalent to 8 bytes (64 bits). The Value is __libcBase__ plus the offset of __system__. This points towards the __system__ call. The payload is as follows:
-```
-payload = "%x %x" % ((libc_offset+free_hook)/8,(libcBase+system))
-```
+For the Offset, we add together __libc_offset__ and __free_hook__ and then divide the sum by 8. We do this because we are already starting at __Magic__ so we need to add __libc_offset__ to get to the __libcBase__. Then we add the offset of __free_hook__ so that we are pinpointing to the address of __free_hook__. We divide by 8 because *mValue* is a QUADWORD. This means that every *mValue* is equivalent to 8 bytes (64 bits). The Value is __libcBase__ plus the offset of __system__. This points towards the __system__ call. The payload is as follows `payload = "%x %x" % ((libc_offset+free_hook)/8,(libcBase+system))`
 After sending this payload, we have succesfully overwritten the __free_hook__ call with the __system__ call.
 For our second call we need to call __freee__ in order to invoke our newly placed __system__ call. We can achieve this by sending 1024 of an arbitrary character as the offset to invoke __free__. When __free__ is invoked the argument passed to it is the value that was supposed to be set at the offset of *mValue*. For example
 ```
@@ -92,3 +83,18 @@ mValue[1024] = value
                  v
         system(value)
 ```
+So, we can send a value to system as an argument. However, this value can only consist of valid hex values such as 0123456789abcdef. By running the script hexcommands.py we get the output:
+```
+ed
+dd
+df
+c99
+cc
+c89
+bc
+dc
+```
+The command of interest is the __ed__ command. This launches the [ed](https://linux.die.net/man/1/ed) text editor.
+So, for our second Offset & Value input we use `payload = ('1'*1024+' '+'ed')`
+Now that we are in the ed editor all we need to do is send the command `!'/bin/sh'`.
+After that, we can CAT out the flag by navigating to /home/trick_or_treat/ and doing `CAT flag`
