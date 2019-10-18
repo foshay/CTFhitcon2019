@@ -2,7 +2,7 @@
 
 ## Instructions
 
-Run treat.py to run the local version. Run trick.py for the remote version.
+Run `python treat.py` to run the local version. Run `python trick.py` for the remote version.
 
 ## Summary
 We overwrite __free_hook__ with __system__. Then invoke __free__, which is now __system__, and pass in the argument "ed" to open the ed editor which allows us to get shell via !'/bin/sh'
