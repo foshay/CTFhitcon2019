@@ -1,5 +1,9 @@
 # CTFhitcon2019
 
+## Instructions
+
+Run treat.py to run the local version. Run trick.py for the remote version.
+
 ## Summary
 We overwrite __free_hook__ with __system__. Then invoke __free__, which is now __system__, and pass in the argument "ed" to open the ed editor which allows us to get shell via !'/bin/sh'
 
@@ -12,7 +16,7 @@ The disassembly of the file is as follows:
 When running checksec we get these results:
 ```
 RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified
-Full RELRO      No canary found   NX enabled    PIE enabled     No RPATH   No RUNPATH   No Symbols      No      0      
+Full RELRO      No canary found   NX enabled    PIE enabled     No RPATH   No RUNPATH   No Symbols      No      0
 ```
 
 The program starts by asking for an input size to send to var7 = malloc(size). From now on I will refer to var7 as *mValue*
@@ -38,7 +42,7 @@ Magic:0x7f0aadd25010
 /proc/PID/maps
 ```
 5567221bc000-5567221dd000 rw-p 00000000 00:00 0                          [heap]
-7f0aadd25000-7f0aaed26000 rw-p 00000000 00:00 0 
+7f0aadd25000-7f0aaed26000 rw-p 00000000 00:00 0
 7f0aaed26000-7f0aaef0d000 r-xp 00000000 08:05 6950739                    /CTFhitcon2019/libc.so.6
 ```
 libc start is at 0x7f0aaed26000. Magic is at 0x7f0aadd25010. Difference is 0x1000FF0
@@ -50,7 +54,7 @@ Magic:0x7f2aeafd4010
 /proc/PID/maps
 ```
 55f249f64000-55f249f85000 rw-p 00000000 00:00 0                          [heap]
-7f2aeafd4000-7f2aebfd5000 rw-p 00000000 00:00 0 
+7f2aeafd4000-7f2aebfd5000 rw-p 00000000 00:00 0
 7f2aebfd5000-7f2aec1bc000 r-xp 00000000 08:05 6950739                    /CTFhitcon2019/libc.so.6
 ```
 libc start is 0x7f2aebfd5000. Magic is at 0x7f2aeafd4010. Difference is 0x1000FF0
