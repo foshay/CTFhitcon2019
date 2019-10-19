@@ -2,7 +2,7 @@
 
 ## Instructions
 
-Run `python treat.py` to run the local version. Run `python trick.py` for the remote version.
+Run treat.py to run the local version. Run trick.py for the remote version.
 
 ## Summary
 We overwrite __free_hook__ with __system__. Then invoke __free__, which is now __system__, and pass in the argument "ed" to open the ed editor which allows us to get shell via !'/bin/sh'
@@ -22,7 +22,7 @@ Full RELRO      No canary found   NX enabled    PIE enabled     No RPATH   No RU
 The program starts by asking for an input size to send to var7 = malloc(size). From now on I will refer to var7 as *mValue*
 After sending the input size it prints out a "Magic" pointer value which points towards where the heap was allocated.
 
-For example, mallocing 100 gives us a pointer to 0x55a29a156260
+For example, mallocing 100 gives us a pointer to 0x55590e00f260
 ```
 Size:100
 Magic:0x55590e00f260
@@ -33,7 +33,8 @@ Magic:0x55590e00f260
 7f3893334000-7f389351b000 r-xp 00000000 08:05 6950739                    /CTFhitcon2019/libc.so.6
 ```
 In order for malloc to allocate a huge page it needs to be given a size of 0x1000000 (Decimal 16777216)
-Doing this changes where the heap chunk is allocated and is placed near libc. When running the program twice allocating a huge page, we observe something peculiar with the proc/PID/maps output
+Doing this changes where the heap chunk is allocated and is placed near libc. When running the program twice allocating a huge page, we observe something peculiar with the proc/PID/maps output.
+
 Run 1:
 ```
 Size:16777216
@@ -45,7 +46,8 @@ Magic:0x7f0aadd25010
 7f0aadd25000-7f0aaed26000 rw-p 00000000 00:00 0
 7f0aaed26000-7f0aaef0d000 r-xp 00000000 08:05 6950739                    /CTFhitcon2019/libc.so.6
 ```
-libc start is at 0x7f0aaed26000. Magic is at 0x7f0aadd25010. Difference is 0x1000FF0
+libc start is at 0x7f0aaed26000. Magic is at 0x7f0aadd25010. Difference is 0x1000FF0.
+
 Run 2:
 ```
 Size:16777216
